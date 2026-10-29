@@ -1,0 +1,53 @@
+# Local development / GitHub CI only. The published deployment uses HTTPS.
+services:
+  db:
+    image: mariadb:10.11
+    environment:
+      MARIADB_DATABASE: booknest
+      MARIADB_USER: booknest
+      MARIADB_PASSWORD: ${BOOKNEST_DB_PASSWORD:?Set the test database password}
+      MARIADB_ROOT_PASSWORD: ${BOOKNEST_DB_ROOT_PASSWORD:?Set the test root password}
+    volumes:
+      - local_database:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 20s
+  web:
+    image: ${BOOKNEST_IMAGE:-booknest:local}
+    build:
+      context: .
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      BOOKNEST_CONFIG_FILE: /var/lib/booknest/config.php
+      BOOKNEST_APP_URL: http://localhost:${BOOKNEST_LOCAL_PORT:-18080}
+      BOOKNEST_DB_HOST: db
+      BOOKNEST_DB_NAME: booknest
+      BOOKNEST_DB_USER: booknest
+      BOOKNEST_DB_PASSWORD: ${BOOKNEST_DB_PASSWORD:?Set the test database password}
+      BOOKNEST_BUSINESS_NAME: Local Test Business
+      BOOKNEST_OWNER_EMAIL: ${BOOKNEST_OWNER_EMAIL:?Set the test owner email}
+      BOOKNEST_OWNER_PASSWORD: ${BOOKNEST_OWNER_PASSWORD:?Set the test owner password}
+      BOOKNEST_RECOVERY_KEY: ${BOOKNEST_RECOVERY_KEY:-}
+    volumes:
+      - local_state:/var/lib/booknest
+    ports:
+      - "127.0.0.1:${BOOKNEST_LOCAL_PORT:-18080}:80"
+    read_only: true
+    tmpfs:
+      - /tmp
+      - /var/run/apache2
+      - /var/lock/apache2
+    healthcheck:
+      test: ["CMD", "php", "/usr/local/lib/booknest/healthcheck.php"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 30s
+volumes:
+  local_database:
+  local_state:

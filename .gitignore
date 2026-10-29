@@ -1,0 +1,10 @@
+.env
+.env.*
+!.env.example
+src/app/config.php
+src/app/config-staging.php
+src/app/install-key.php
+src/app/install-guard.php
+*.log
+*.zip
+.DS_Store

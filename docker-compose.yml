@@ -1,0 +1,84 @@
+# Public image is built by .github/workflows/publish.yml after GitHub upload.
+# This repository image becomes available after a successful GitHub Actions run.
+services:
+  db:
+    image: mariadb:10.11
+    restart: unless-stopped
+    environment:
+      MARIADB_DATABASE: booknest
+      MARIADB_USER: booknest
+      MARIADB_PASSWORD: ${BOOKNEST_DB_PASSWORD:?Set a unique database password}
+      MARIADB_ROOT_PASSWORD: ${BOOKNEST_DB_ROOT_PASSWORD:?Set a separate database root password}
+    volumes:
+      - database:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+
+  web:
+    image: ghcr.io/hamzaarshad-exe/booknest:latest
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      BOOKNEST_CONFIG_FILE: /var/lib/booknest/config.php
+      BOOKNEST_APP_URL: https://${BOOKNEST_DOMAIN:?Set the booking hostname without https or a path}
+      BOOKNEST_DB_HOST: db
+      BOOKNEST_DB_PORT: "3306"
+      BOOKNEST_DB_NAME: booknest
+      BOOKNEST_DB_USER: booknest
+      BOOKNEST_DB_PASSWORD: ${BOOKNEST_DB_PASSWORD:?Set a unique database password}
+      BOOKNEST_BUSINESS_NAME: ${BOOKNEST_BUSINESS_NAME:-Your Business}
+      BOOKNEST_OWNER_NAME: ${BOOKNEST_OWNER_NAME:-Business Owner}
+      BOOKNEST_OWNER_EMAIL: ${BOOKNEST_OWNER_EMAIL:-}
+      BOOKNEST_OWNER_PASSWORD: ${BOOKNEST_OWNER_PASSWORD:-}
+      BOOKNEST_TIMEZONE: ${BOOKNEST_TIMEZONE:-Asia/Karachi}
+      BOOKNEST_CURRENCY: ${BOOKNEST_CURRENCY:-PKR}
+      BOOKNEST_RECOVERY_KEY: ${BOOKNEST_RECOVERY_KEY:-}
+    volumes:
+      - state:/var/lib/booknest
+    read_only: true
+    tmpfs:
+      - /tmp
+      - /var/run/apache2
+      - /var/lock/apache2
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test: ["CMD", "php", "/usr/local/lib/booknest/healthcheck.php"]
+      interval: 30s
+      timeout: 5s
+      retries: 6
+      start_period: 90s
+
+  proxy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    depends_on:
+      web:
+        condition: service_healthy
+    command:
+      - caddy
+      - reverse-proxy
+      - --from
+      - ${BOOKNEST_DOMAIN:?Set your booking hostname}
+      - --to
+      - web:80
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - certificates:/data
+      - proxy_config:/config
+    security_opt:
+      - no-new-privileges:true
+
+volumes:
+  database:
+  state:
+  certificates:
+  proxy_config:

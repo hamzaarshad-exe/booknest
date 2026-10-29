@@ -1,0 +1,13 @@
+.git
+.github
+.env
+.env.*
+!.env.example
+tests
+docs
+*.zip
+*.log
+src/app/config.php
+src/app/config-staging.php
+src/app/install-key.php
+src/app/install-guard.php
