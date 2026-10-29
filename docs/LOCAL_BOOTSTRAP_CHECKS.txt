@@ -1,0 +1,26 @@
+PASS Public plain HTTP rejected
+PASS Fresh install requires owner password
+PASS Failed setup does not create a configuration
+PASS Weak owner password rejected
+PASS Docker bootstrap initializes workspace: 
+PASS Application secret generated
+PASS Public URL stored
+PASS Configuration permissions are private
+PASS One owner created
+PASS Owner password hashed correctly
+PASS Seven opening-hour records initialized
+PASS Initial service remains hidden
+PASS Booking mutex initialized
+PASS Restart succeeds
+PASS Restart preserves application secret
+PASS Restart does not reset owner credentials
+PASS Restart preserves business settings
+PASS Owner setup password can be removed after initialization
+PASS Docker environment enables owner recovery
+PASS Used recovery key does not reactivate on restart
+PASS A new recovery key can be enabled
+PASS Clearing environment disables recovery
+PASS Runtime resolves external configuration path
+PASS Ordinary PHP configuration path still supported
+PASS Repeated boots do not duplicate records
+TOTAL 25 Docker bootstrap checks passed.

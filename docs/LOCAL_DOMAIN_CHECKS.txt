@@ -1,0 +1,35 @@
+PASS Exact two-decimal money parsing
+PASS Negative prices rejected
+PASS Extra decimal places rejected
+PASS Invalid calendar dates rejected
+PASS HTML escaped at output
+PASS Password whitespace preserved
+PASS Bcrypt length truncation prevented
+PASS Duration and buffer fit within opening hours
+PASS Closed days unavailable
+PASS Past dates unavailable
+PASS Booking confirmed with correct UTC storage
+PASS Private management token validation
+PASS Idempotent booking retry
+PASS Exact double booking blocked
+PASS Buffer overlap blocked
+PASS Different team member can use the same time
+PASS Existing booking price preserved
+PASS Reschedule preserves duration and price
+PASS Reschedule frees original slot
+PASS Future appointment cannot be marked completed
+PASS Partial payment recorded
+PASS Overpayment rejected
+PASS Excess refund rejected
+PASS Refund reduces net received
+PASS Customer cancellation updates booking
+PASS Payments on cancelled booking rejected
+PASS Refund supported after cancellation
+PASS Cancelled booking cannot silently reactivate
+PASS Staff time off removes overlapping slots
+PASS Manual confirmation creates pending request
+PASS Pending request holds its slot
+PASS Hidden team member cannot receive bookings
+PASS Six concurrent requests produce exactly one booking
+PASS Concurrent booking persisted exactly once
+TOTAL 34 checks passed.

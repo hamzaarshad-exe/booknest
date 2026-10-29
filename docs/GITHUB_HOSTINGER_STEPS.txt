@@ -1,0 +1,130 @@
+BOOKNEST — GITHUB AND HOSTINGER STEPS (NO SSH)
+Author: Softnic Solutions
+Website: https://softnicsolutions.com
+Repository: https://github.com/hamzaarshad-exe/booknest
+Expected image: ghcr.io/hamzaarshad-exe/booknest:latest
+
+This package is prepared for the repository above. The image does not exist
+merely because its address is configured: GitHub Actions must build and publish
+it successfully. Hostinger approval and referral setup remain separate steps.
+
+STEP 1 — YOUR REPOSITORY
+Your supplied repository URL is https://github.com/hamzaarshad-exe/booknest.
+Its source visibility must be Public for the partner program.
+The original .git clone URL may end in .git; use the ordinary repository page
+above when working in your browser.
+
+STEP 2 — UPLOAD THE UPDATED PACKAGE
+1. Download the latest BOOKNEST_GITHUB_DOCKER.zip supplied with this update.
+2. Extract the ZIP on your computer and open the extracted folder.
+3. On the empty repository page, click uploading an existing file. If files
+   already exist, use Add file > Upload files.
+4. Drag in ALL files and folders inside the extracted folder, including .github.
+   Do not upload the ZIP itself or put an extra outer folder above the files.
+5. Enter the commit message: Add BookNest Docker source
+6. Commit to the default branch. If GitHub creates a branch/pull request instead,
+   merge that change into the default branch before continuing.
+7. Check that Dockerfile, docker-compose.yml and README.md appear directly on
+   the repository's main page and .github/workflows/publish.yml is included.
+
+STEP 3 — BUILD AND TEST AUTOMATICALLY
+1. Open the repository's Actions tab.
+2. Open Build, test and publish BookNest.
+3. If no run started automatically, use Run workflow on the default branch.
+4. Wait for the complete workflow to finish with a green success result.
+5. The workflow builds the image, starts disposable database/app containers,
+   checks login and administration pages, tests a container restart, checks
+   Apache protection, and publishes only after success.
+6. The successful job summary should show:
+   ghcr.io/hamzaarshad-exe/booknest:latest
+7. If the workflow is red, send the failed step's screenshot/log excerpt so we
+   can fix the cause before deployment. Do not submit a failed build as ready.
+
+The workflow uses GitHub's built-in token for publishing. No separate personal
+access token or SSH connection is needed for this workflow.
+
+STEP 4 — CHECK IMAGE VISIBILITY
+1. Open the BookNest container under Packages in your repository/profile.
+2. Open Package settings and check its visibility.
+3. If it is Private, change it to Public and complete GitHub's confirmation.
+4. Both the source repository and the image must be available to Hostinger.
+   Source visibility and container-package visibility are separate settings.
+
+STEP 5 — LIST THE APP IN HOSTINGER
+1. In your hPanel, open Open source.
+2. Click List your app.
+3. Supply the public repository URL: https://github.com/hamzaarshad-exe/booknest
+4. If Connect GitHub is shown, choose the correct account/repository.
+5. If requested, use these project details:
+   App name: BookNest
+   Author/publisher: Softnic Solutions
+   Website: https://softnicsolutions.com
+   Description: Open-source appointment booking with staff availability,
+   rescheduling, cancellations and a business dashboard.
+6. Hostinger checks readiness for deployment. Its account screens may differ
+   during rollout; share the actual next screen if a field is unclear.
+
+STEP 6 — GET YOUR PARTNER CODE AND BUTTON
+Hostinger supplies the partner/referral code through its Open Source Partners
+flow. GitHub does not generate it and the code must not be invented.
+
+Use the actual Deploy on Hostinger snippet returned by your own partner
+onboarding/dashboard. Copy it into README.md and commit the update. It must
+point to your real repository and include your actual tracked partner code.
+Do not publish a placeholder button or assume that a generic affiliate code is
+the correct code for this flow.
+
+Public program information:
+https://www.hostinger.com/open-source-partners
+
+STEP 7 — WHEN SOMEONE RUNS THE DOCKER EDITION
+A compatible Docker VPS runs this edition. Publishing the GitHub repository
+does not upgrade ordinary PHP hosting or deploy the app to an existing website.
+Your earlier PHP/MySQL upload package remains a separate installation option.
+
+Hostinger's VPS Docker Manager supports Compose-based deployment through its
+interface. Use the public docker-compose.yml after the image is published.
+The app image address is already configured for this repository.
+
+Provide these values PRIVATELY in the deployment settings:
+- BOOKNEST_DOMAIN: the real booking hostname, without https or a path
+- BOOKNEST_BUSINESS_NAME and BOOKNEST_OWNER_NAME
+- BOOKNEST_OWNER_EMAIL
+- BOOKNEST_OWNER_PASSWORD: a new initial owner password of 12-72 characters
+- BOOKNEST_DB_PASSWORD: a unique application database password
+- BOOKNEST_DB_ROOT_PASSWORD: a separate database root password
+- BOOKNEST_TIMEZONE: Asia/Karachi or the business's correct timezone
+- BOOKNEST_CURRENCY: PKR or another supported currency
+
+Never put filled deployment passwords in the public repository. .env.example
+contains examples only. BOOKNEST_IMAGE is an optional local-development override;
+the production docker-compose.yml already contains the real image address.
+
+The included HTTPS proxy needs the booking hostname to point to the VPS and
+ports 80/443 to be available. If Hostinger Traefik or another proxy already uses
+those ports, adapt the routing to that VPS before deployment. Actual domain,
+DNS and TLS setup must be checked against the server being used.
+
+After the app opens, sign in with the configured owner account. Update the
+business settings, edit the first hidden service, set its price and team,
+then enable it before sharing the booking page.
+
+EARNINGS
+Hosting commission comes from qualifying plan purchases through your tracked
+Hostinger link/button under Hostinger's terms. A software download alone does
+not create a paid hosting referral. Confirm current payout details with your
+partner dashboard/Hostinger before relying on a payout schedule.
+
+VALIDATION
+59 database/source logic checks passed locally: 25 Docker-bootstrap behavior
+checks and 34 booking-domain checks. PHP/shell/workflow command syntax and YAML
+parsing were checked. No local Docker engine is available; the full image build
+and running-container checks must pass in GitHub Actions after upload.
+No live Hostinger VPS, domain/TLS deployment, program approval, partner code or
+referral attribution has been verified here.
+
+OFFICIAL REFERENCES
+https://www.hostinger.com/open-source-partners
+https://www.hostinger.com/support/deploy-on-hostinger-button/
+https://docs.github.com/en/repositories/working-with-files/managing-files/adding-a-file-to-a-repository
+https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry
