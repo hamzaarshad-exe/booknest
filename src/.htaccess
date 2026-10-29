@@ -1,0 +1,12 @@
+Options -Indexes
+DirectoryIndex index.php
+
+<IfModule mod_headers.c>
+ Header always set X-Content-Type-Options "nosniff"
+ Header always set X-Frame-Options "DENY"
+ Header always set Referrer-Policy "no-referrer"
+</IfModule>
+
+<FilesMatch "(?i)(^\.|\.(sql|log|ini|env|bak|zip|md|txt|json|lock)$|config\.example\.php$)">
+ Require all denied
+</FilesMatch>
