@@ -1,0 +1,98 @@
+name: Build, test and publish BookNest
+
+"on":
+  push:
+    paths-ignore: ["docs/**", "**.md", "LICENSE", "docker-compose.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: booknest-publish-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  publish:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - name: Read repository
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Set image name
+        id: image
+        shell: bash
+        run: |
+          image="ghcr.io/${GITHUB_REPOSITORY,,}"
+          printf 'name=%s\n' "$image" >> "$GITHUB_OUTPUT"
+
+      - name: Build the image
+        env:
+          BOOKNEST_CI_IMAGE: ${{ steps.image.outputs.name }}
+        run: |
+          docker build --build-arg SOURCE_URL="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY" -t "$BOOKNEST_CI_IMAGE:ci" .
+
+      - name: Prepare disposable CI settings
+        env:
+          BOOKNEST_CI_IMAGE: ${{ steps.image.outputs.name }}
+        run: |
+          umask 077
+          cat > .env.ci <<EOF
+          BOOKNEST_IMAGE=$BOOKNEST_CI_IMAGE:ci
+          BOOKNEST_DB_PASSWORD=ci-disposable-database-password
+          BOOKNEST_DB_ROOT_PASSWORD=ci-disposable-root-password
+          BOOKNEST_OWNER_EMAIL=owner@example.test
+          BOOKNEST_OWNER_PASSWORD=ci-disposable-owner-password
+          BOOKNEST_LOCAL_PORT=18080
+          EOF
+
+      - name: Validate production Compose
+        env:
+          BOOKNEST_IMAGE: ${{ steps.image.outputs.name }}:ci
+          BOOKNEST_DOMAIN: booking.example.test
+          BOOKNEST_DB_PASSWORD: ci-disposable-database-password
+          BOOKNEST_DB_ROOT_PASSWORD: ci-disposable-root-password
+        run: docker compose -f docker-compose.yml config --quiet
+
+      - name: Start disposable test containers
+        run: docker compose --env-file .env.ci -p booknest-ci -f docker-compose.local.yml up -d --wait --wait-timeout 180
+
+      - name: Test login and persistence
+        run: |
+          python3 tests/container_smoke.py
+          docker compose --env-file .env.ci -p booknest-ci -f docker-compose.local.yml restart web
+          for attempt in $(seq 1 45); do
+            if curl -fsS http://localhost:18080/ >/dev/null; then break; fi
+            sleep 2
+          done
+          python3 tests/container_smoke.py
+
+      - name: Show disposable test diagnostics
+        if: failure()
+        run: docker compose --env-file .env.ci -p booknest-ci -f docker-compose.local.yml logs --no-color --tail 100
+
+      - name: Stop disposable containers
+        if: always()
+        run: docker compose --env-file .env.ci -p booknest-ci -f docker-compose.local.yml down -v --remove-orphans
+
+      - name: Sign in to GitHub Container Registry
+        if: github.ref_name == github.event.repository.default_branch
+        env:
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GHCR_USER: ${{ github.actor }}
+        run: printf '%s' "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USER" --password-stdin
+
+      - name: Publish the tested image
+        if: github.ref_name == github.event.repository.default_branch
+        env:
+          BOOKNEST_CI_IMAGE: ${{ steps.image.outputs.name }}
+        run: |
+          docker tag "$BOOKNEST_CI_IMAGE:ci" "$BOOKNEST_CI_IMAGE:latest"
+          docker tag "$BOOKNEST_CI_IMAGE:ci" "$BOOKNEST_CI_IMAGE:sha-$GITHUB_SHA"
+          docker push "$BOOKNEST_CI_IMAGE:latest"
+          docker push "$BOOKNEST_CI_IMAGE:sha-$GITHUB_SHA"
+          printf '## BookNest image published\n\n`%s:latest`\n\nCheck that this package has **Public** visibility before submitting to Hostinger.\n' "$BOOKNEST_CI_IMAGE" >> "$GITHUB_STEP_SUMMARY"
